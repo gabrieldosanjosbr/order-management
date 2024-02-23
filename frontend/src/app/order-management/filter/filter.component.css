@@ -1,0 +1,15 @@
+.order-filter-component {
+	display: flex;
+	float: right;
+}
+
+.order-filter-component-field {
+	margin-right: 10px;
+	width: auto; /* Adjust as needed */
+}
+
+.order-filter-component-button {
+	width: 100%;
+	max-width: 200px;
+	height: 55px; /* Set the same height for the button */
+}

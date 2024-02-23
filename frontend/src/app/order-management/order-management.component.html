@@ -1,0 +1,10 @@
+<app-order-filter
+	(filterData)="onSubmitFilter($event)">
+</app-order-filter>
+<app-common-table
+	[paginatorLength]="totalOrders"
+	[dataSource]="dataSource"
+	[displayedColumns]="displayedColumns()"
+	(onPaginatorChange)="onPaginatorChange($event)"
+>
+</app-common-table>

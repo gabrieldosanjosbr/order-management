@@ -1,0 +1,61 @@
+version: "3.4"
+
+services:
+  php:
+    build:
+      context: ./docker/php
+      network: host
+    working_dir: /app
+    restart: always
+    depends_on:
+      - postgresql
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/app
+      - ./docker/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/app.conf
+      - ./docker/php/conf.d/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ./docker/php/conf.d/symfony.dev.ini:/usr/local/etc/php/conf.d/symfony.ini
+#      - ./docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    networks:
+      - default
+
+  nginx:
+    image: nginx:1.12.1
+    restart: always
+    tty: true
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/app/public
+      - ./docker/nginx/www.conf:/etc/nginx/conf.d/app.conf
+    networks:
+      - default
+
+  postgresql:
+    image: postgres:${POSTGRES_VERSION:-15}-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-app}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-123}
+      - POSTGRES_USER=${POSTGRES_USER:-app}
+    volumes:
+       - ./docker/postgresql/data:/var/lib/postgresql/data
+
+  node:
+    image: node
+    working_dir: /app
+    tty: true
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+    networks:
+      - default
+    stdin_open: true
+
+networks:
+  default:
+    driver: bridge

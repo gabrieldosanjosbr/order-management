@@ -1,0 +1,95 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: true
+
+    _instanceof:
+        App\Infrastructure\Request\RequestFactory:
+            tags:
+                - {name: app.request_factory}
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Action/Request/'
+            - '../src/Action/Response/'
+            - '../src/Domain/Model/'
+            - '../src/Domain/Exception/'
+            - '../src/Kernel.php'
+
+    App\Infrastructure\Resource\Repository\OrderRepository:
+        arguments:
+            $resource: '%env(resolve:ORDERS_RESOURCE_FILE)%'
+
+    App\Infrastructure\Doctrine\EventSubscriber\OrderPrePersistSubscriber:
+        tags:
+            - { name: doctrine.event_subscriber }
+
+    App\Infrastructure\Responder\JsonResponder:
+        tags:
+            - {name: kernel.event_listener, event: kernel.view}
+
+    App\Domain\Service\Order\Cancel:
+        arguments:
+            $orderRepository: '@App\Infrastructure\Doctrine\Repository\OrderRepository'
+            $orderStatusRepository: '@App\Infrastructure\Doctrine\Repository\OrderStatusRepository'
+
+    App\Domain\Service\Order\Import:
+        arguments:
+            $orderRepository: '@App\Infrastructure\Doctrine\Repository\OrderRepository'
+            $orderResourceRepository:  '@App\Infrastructure\Resource\Repository\OrderRepository'
+
+    App\Infrastructure\Request\RequestFactoryProvider:
+        class: App\Infrastructure\Request\RequestFactoryProvider
+        arguments:
+            - !tagged_locator {tag: app.request_factory, index_by: 'key', default_index_method: 'supportedRequest'}
+
+    App\Infrastructure\Request\RequestConverter:
+        tags:
+            - {name: request.param_converter, converter: converter.request, priority: false}
+
+    App\Infrastructure\Service\Locale:
+        calls:
+            - withRequest: ['@request_stack']
+        arguments:
+            $defaultLocale: '%env(resolve:DEFAULT_LOCALE)%'
+
+    App\Infrastructure\Request\OrderRequestFactory:
+        arguments:
+            $pageSize: '%env(resolve:ORDERS_PER_PAGE)%'
+            $orderByColumn: 'id'
+            $sortBy: 'DESC'
+
+    App\Action\ListOrders:
+        arguments:
+            $orderRepository: '@App\Infrastructure\Doctrine\Repository\OrderRepository'
+
+    App\Action\ListOrderStatus:
+        arguments:
+            $orderStatusRepository: '@App\Infrastructure\Doctrine\Repository\OrderStatusRepository'
+
+    App\Infrastructure\Normalizer\OrderNormalizer:
+        tags: [serializer.normalizer]
+
+    App\Infrastructure\Normalizer\OrderStatusNormalizer:
+        tags: [serializer.normalizer]
+
+    App\Infrastructure\Normalizer\MessageTranslatableNormalizer:
+        arguments:
+            $modelNameConverter: '@App\Infrastructure\Serializer\ModelNameConverter'
+        tags: [serializer.normalizer]
+
+    App\Infrastructure\Serializer\ModelNameConverter:
+        tags: [serializer.name_converter]

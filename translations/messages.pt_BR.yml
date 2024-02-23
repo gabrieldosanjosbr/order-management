@@ -1,0 +1,11 @@
+Yes: Sim
+No: Não
+In Production: Em Produção
+Pending: Pendente
+Cancelled: Cancelado
+Order {{id}} not found: Pedido {{id}} não encontrado
+Order {{id}} can't be cancelled: Pedido {{id}} não pode ser cancelado
+Cancelled status not found: Status cancelado não encontrado
+Missing order id: Faltando ID do pedido
+Sorry order couldn't be cancelled due a generic error: Não foi possível cancelar o pedido devido a um erro genérico
+Order {{id}} successfully cancelled: Pedido {{id}} cancelado com sucesso

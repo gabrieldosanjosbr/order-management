@@ -1,0 +1,30 @@
+<form class="order-filter-component" (keydown.enter)="onSubmitFilter()">
+	<mat-form-field class="order-filter-component-field">
+		<mat-label i18n>Customer Name</mat-label>
+		<input matInput [(ngModel)]="customerName" name="customer">
+	</mat-form-field>
+
+	<mat-form-field class="order-filter-component-field">
+		<mat-label i18n>Order Status</mat-label>
+		<mat-select [(ngModel)]="orderStatus" name="status">
+			<mat-option i18n>None</mat-option>
+			<mat-option *ngFor="let option of orderStatusOptions" [value]="option.code">
+				{{ option.name }}
+			</mat-option>
+		</mat-select>
+	</mat-form-field>
+
+	<div>
+		<button
+			(click)="onSubmitFilter(); $event.preventDefault()"
+			type="button"
+			mat-flat-button
+			mat-raised-button
+			color="primary"
+			class="order-filter-component-button"
+		>
+			<mat-icon>search</mat-icon>
+			<ng-container i18n>Search</ng-container>
+		</button>
+	</div>
+</form>
